@@ -2,7 +2,8 @@ def call(
         String service,
         String testReportsDir = null,
         boolean allowEmptyResults = false,
-        double healthScaleFactor = 1.0
+        double healthScaleFactor = 1.0,
+        def perfReportConstraints = null
 ) {
     docker.withTool('docker') {
         def CONTAINER = sh(returnStdout: true, script: "docker-compose ps -q ${service}").trim()
@@ -22,9 +23,23 @@ find ./results -name '*.xml' -exec sed -i "$${SED_COMMAND}" {} \;
             error("Service ${service} exited with code ${exit_code}")
         }
     }
+    if (perfReportConstraints != null) {
+        def buildResultBeforePerfReport = currentBuild.currentResult
+        perfReport(
+                sourceDataFiles: 'results/**/*.xml',
+                constraints: perfReportConstraints,
+                modeEvaluation: true,
+        )
+        def buildResultAfterPerfReport = currentBuild.currentResult
+        if ((buildResultAfterPerfReport == 'FAILURE' || buildResultAfterPerfReport == 'UNSTABLE') && (buildResultBeforePerfReport != buildResultAfterPerfReport)) {
+            error("Performance Report failed")
+        }
+    } else {
+        echo "no perfReportConstraints parameter, skipped Performance Report generation/validation"
+    }
 }
 
 def call(args) {
-        return call(args.service, args.testReportsDir, args.allowEmptyResults || false, (args.healthScaleFactor ?: 1.0d))
+        return call(args.service, args.testReportsDir, args.allowEmptyResults || false, (args.healthScaleFactor ?: 1.0d), args.perfReportConstraints ?: null)
 }
 
