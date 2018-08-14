@@ -24,6 +24,7 @@ find ./results -name '*.xml' -exec sed -i "$${SED_COMMAND}" {} \;
         }
     }
     if (perfReportConstraints != null) {
+        echo "perfReportConstraints parameter is deprecated, use performanceReport(perfConstraints) instead"
         def buildResultBeforePerfReport = currentBuild.currentResult
         perfReport(
                 sourceDataFiles: 'results/**/*.xml',
@@ -36,8 +37,6 @@ find ./results -name '*.xml' -exec sed -i "$${SED_COMMAND}" {} \;
             // because steps can be executed in parallel
             error("Performance Report failed")
         }
-    } else {
-        echo "no perfReportConstraints parameter, skipped Performance Report generation/validation"
     }
 }
 
