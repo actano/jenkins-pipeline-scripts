@@ -1,3 +1,5 @@
+import hudson.tasks.test.AbstractTestResultAction
+
 Map<String,Integer> call(Map props) {
     AbstractTestResultAction testResultAction = currentBuild.rawBuild.getAction(AbstractTestResultAction.class)
     int total = testResultAction == null ? 0 : testResultAction.getTotalCount()
