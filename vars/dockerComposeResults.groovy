@@ -17,7 +17,11 @@ find ./results -name '*.xml' -exec sed -i "$${SED_COMMAND}" {} \;
             if (copyExitCode != 0) {
                 echo("WARNING: Fetching test results from container failed with ${copyExitCode}")
             }
-            junit(testResults: 'results/**/*.xml', allowEmptyResults: allowEmptyResults, healthScaleFactor: healthScaleFactor, testDataPublishers: [[$class: 'AttachmentPublisher']])
+            Map<String, Integer> testCount = recordJunit(testResults: 'results/**/*.xml', allowEmptyResults: allowEmptyResults, healthScaleFactor: healthScaleFactor, testDataPublishers: [[$class: 'AttachmentPublisher']])
+            List kv = testCount.collect { String name, Integer count ->
+                return "${count} ${name}"
+            }
+            echo "Recorded tests: ${kv.join(', ')}"
         }
         if (exit_code != "0") {
             error("Service ${service} exited with code ${exit_code}")
